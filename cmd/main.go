@@ -5,22 +5,25 @@ import (
 
 	"github.com/JscorpTech/ocpp/internal/config"
 	"github.com/JscorpTech/ocpp/internal/ocpp"
+	"github.com/joho/godotenv"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 )
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		panic(err)
+	}
 	logger, err := zap.NewProduction()
 	ctx := context.Background()
 	rdb := redis.NewClient(&redis.Options{
 		Addr: "127.0.0.1:6379",
 		DB:   0,
 	})
-
 	if err := rdb.Ping(ctx).Err(); err != nil {
 		panic(err)
 	}
-
 	if err != nil {
 		panic(err)
 	}

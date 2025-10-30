@@ -25,8 +25,8 @@ type Server struct {
 }
 
 type RemoteCommand struct {
-	CpID string         `json:"CpID"`
-	Data map[string]any `json:"data"`
+	CpID string `json:"CpID"`
+	Data []any  `json:"data"`
 }
 
 func NewServer(ctx context.Context, cfg *config.Config, logger *zap.Logger, rdb *redis.Client) *Server {
@@ -44,8 +44,7 @@ func (s *Server) Run() {
 	csys := cs.New()
 	go s.RemoteCommandWorker(csys)
 	go csys.Run(s.Cfg.Addr, func(req cpreq.ChargePointRequest, metadata cs.ChargePointRequestMetadata) (cpresp.ChargePointResponse, error) {
-		fmt.Printf("EXAMPLE(MAIN): Request from %s\n", metadata.ChargePointID)
-		handler := NewHandler(s.Logger)
+		handler := NewHandler(s.Ctx, s.Logger, s.Redis, metadata, s.Cfg)
 		switch req := req.(type) {
 		case *cpreq.BootNotification:
 			return handler.BootNotification(req)
@@ -69,15 +68,15 @@ func (s *Server) Run() {
 }
 
 func (s *Server) RemoteCommandWorker(csys cs.CentralSystem) {
-	pubsub := s.Redis.Subscribe(s.Ctx, "commands")
 	fmt.Println("Remote command worker ishga tushdi")
 	for {
-		message, err := pubsub.ReceiveMessage(s.Ctx)
+		message, err := s.Redis.BLPop(s.Ctx, 0, "commands").Result()
+		s.Logger.Info("new command", zap.String("command", message[1]))
 		if err != nil {
 			s.Logger.Error("remote command message receive error", zap.Error(err))
 		}
 		var data RemoteCommand
-		if err := json.Unmarshal([]byte(message.Payload), &data); err != nil {
+		if err := json.Unmarshal([]byte(message[1]), &data); err != nil {
 			s.Logger.Error("Remote command message decode error", zap.Error(err))
 		}
 		csys.WriteJson(data.CpID, data.Data)
