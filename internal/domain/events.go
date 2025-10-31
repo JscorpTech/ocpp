@@ -7,6 +7,7 @@ const (
 	StartTransactionEvent      EventTypes = "start_transaction"
 	StopTransactionEvent       EventTypes = "stop_transaction"
 	MeterValuesEvent           EventTypes = "meter_value"
+	HealthEvent                EventTypes = "health"
 )
 
 type Event struct {
@@ -16,13 +17,13 @@ type Event struct {
 
 type ChangeConnectorStatus struct {
 	Charger string `json:"charger"`
-	Conn    string `json:"conn"`
+	Conn    int    `json:"conn"`
 	Status  string `json:"status"`
 }
 
 type StartTransaction struct {
 	Charger    string `json:"charger"`
-	Conn       string `json:"conn"`
+	Conn       int    `json:"conn"`
 	Tag        string `json:"tag"`
 	MeterStart int    `json:"meter_start"`
 }
@@ -38,4 +39,8 @@ type MeterValues struct {
 	Conn          int   `json:"conn"`
 	TransactionId int32 `json:"transaction_id"`
 	MeterValue    any   `json:"meter_value"`
+}
+
+type Healthcheck struct {
+	Charger string `json:"charger"`
 }

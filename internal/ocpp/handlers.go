@@ -2,7 +2,6 @@ package ocpp
 
 import (
 	"context"
-	"strconv"
 	"time"
 
 	"github.com/JscorpTech/ocpp/internal/client"
@@ -58,7 +57,7 @@ func (h *Handlers) StartTransaction(req *cpreq.StartTransaction) (cpresp.ChargeP
 		Event: domain.StartTransactionEvent,
 		Data: domain.StartTransaction{
 			Charger:    h.metadata.ChargePointID,
-			Conn:       strconv.Itoa(req.ConnectorId),
+			Conn:       req.ConnectorId,
 			Tag:        req.IdTag,
 			MeterStart: req.MeterStart,
 		},
@@ -91,6 +90,13 @@ func (h *Handlers) StopTransaction(req *cpreq.StopTransaction) (cpresp.ChargePoi
 }
 
 func (h *Handlers) Heartbeart(req *cpreq.Heartbeat) (cpresp.ChargePointResponse, error) {
+	event := domain.Event{
+		Event: domain.HealthEvent,
+		Data: domain.Healthcheck{
+			Charger: h.metadata.ChargePointID,
+		},
+	}
+	h.event.SendEvent(h.ctx, h.redis, event, h.Logger)
 	return &cpresp.Heartbeat{CurrentTime: time.Now()}, nil
 }
 

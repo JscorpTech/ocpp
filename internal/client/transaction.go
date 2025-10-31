@@ -17,6 +17,7 @@ type Transaction struct {
 		Status        string  `json:"status"`
 		Limit         string  `json:"limit"`
 		Amount        string  `json:"amount"`
+		IsActive      bool    `json:"is_active"`
 		Tag           string  `json:"tag"`
 		MeterStart    int     `json:"meter_start"`
 		MeterStop     int     `json:"meter_stop"`
