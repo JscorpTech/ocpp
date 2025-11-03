@@ -127,3 +127,10 @@ func (h *Handlers) BootNotification(req *cpreq.BootNotification) (cpresp.ChargeP
 		Interval:    60,
 	}, nil
 }
+
+func (h *Handlers) DataTransfer(req *cpreq.DataTransfer) (cpresp.ChargePointResponse, error) {
+	h.Logger.Info("DataTransfer", zap.Any("data", req.Data))
+	return &cpresp.DataTransfer{
+		Status: "Accepted",
+	}, nil
+}

@@ -60,6 +60,8 @@ func (s *Server) Run() {
 			return handler.StartTransaction(req)
 		case *cpreq.StopTransaction:
 			return handler.StopTransaction(req)
+		case *cpreq.DataTransfer:
+			return handler.DataTransfer(req)
 		default:
 			fmt.Printf("EXAMPLE(MAIN): action not supported: %s\n", req.Action())
 			return nil, errors.New("Response not supported")
