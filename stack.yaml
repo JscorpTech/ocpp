@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   ocpp:
-    image: jscorptech/gwat_ocpp:latest
+    image: jscorptech/gwat_ocpp:2
     env_file:
       - .env
     networks:
