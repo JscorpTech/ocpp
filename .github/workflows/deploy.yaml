@@ -1,0 +1,130 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  PROJECT_NAME: gwat_ocpp
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Copy env
+        run: |
+          cp .env.example .env
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile
+          push: false
+          load: true
+          tags: ${{ env.PROJECT_NAME }}:test
+          no-cache: true
+
+      - name: Run migrations and tests
+        run: |
+          docker run --rm \
+            --network host \
+            -e REDIS_URL=redis:6379 \
+            ${{ env.PROJECT_NAME }}:test \
+            sh -c "go test ./..."
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Tag and push to Docker Hub
+        run: |
+          docker tag ${{ env.PROJECT_NAME }}:test ${{ secrets.DOCKER_USERNAME }}/${{ env.PROJECT_NAME }}:latest
+          docker tag ${{ env.PROJECT_NAME }}:test ${{ secrets.DOCKER_USERNAME }}/${{ env.PROJECT_NAME }}:${{ github.run_number }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/${{ env.PROJECT_NAME }}:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/${{ env.PROJECT_NAME }}:${{ github.run_number }}
+          echo "SUCCESS TAGS: latest, ${{ github.run_number }}"
+
+      - name: Update stack.yaml and version
+        run: |
+          sed -i 's|image: ${{ secrets.DOCKER_USERNAME }}/${{ env.PROJECT_NAME }}:.*|image: ${{ secrets.DOCKER_USERNAME }}/${{ env.PROJECT_NAME }}:${{ github.run_number }}|' stack.yaml
+
+      - name: Commit and push updated version
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "🔄 Update image to ${{ github.run_number }} [CI SKIP]" || echo "No changes"
+          git pull origin main --rebase
+          git push origin main
+
+      - name: Deploy to server via SSH
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          # key: ${{ secrets.KEY }}
+          password: ${{ secrets.PASSWORD }}
+          port: ${{ secrets.PORT }}
+          script: |
+            PROJECTS=/opt/projects/
+            DIR=/opt/projects/${{ env.PROJECT_NAME }}/
+
+            if [ -d "$PROJECTS" ]; then
+              echo "projects papkasi mavjud"
+            else
+              mkdir -p $PROJECTS
+              echo "projects papkasi yaratildi"
+            fi
+
+            if [ -d "$DIR" ]; then
+              echo "loyiha mavjud"
+            else
+              cd $PROJECTS
+              git clone git@github.com:${{ github.repository }}.git ${{ env.PROJECT_NAME }}
+              echo "Clone qilindi";
+            fi
+
+            cd $DIR
+            git fetch origin main
+            git reset --hard origin/main
+            cp .env.example .env
+
+            update_env() {
+                local env_file=".env"
+                cp .env.example "$env_file"
+
+                for kv in "$@"; do
+                    local key="${kv%%=*}"
+                    local value="${kv#*=}"
+                    sed -i "s|^$key=.*|$key=$value|" "$env_file"
+                done
+            }
+
+            export PORT=10800
+            docker stack deploy -c stack.yaml ${{ env.PROJECT_NAME }}
+

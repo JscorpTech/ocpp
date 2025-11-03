@@ -11,23 +11,17 @@ import (
 )
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		panic(err)
-	}
-	logger, err := zap.NewProduction()
+	logger, _ := zap.NewProduction()
+	_ = godotenv.Load()
+	cfg := config.NewConfig()
 	ctx := context.Background()
 	rdb := redis.NewClient(&redis.Options{
-		Addr: "127.0.0.1:6379",
+		Addr: cfg.RedisAddr,
 		DB:   0,
 	})
 	if err := rdb.Ping(ctx).Err(); err != nil {
 		panic(err)
 	}
-	if err != nil {
-		panic(err)
-	}
-	cfg := config.NewConfig()
 	server := ocpp.NewServer(ctx, cfg, logger, rdb)
 	go server.Run()
 	select {}

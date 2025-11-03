@@ -1,0 +1,41 @@
+version: "3.8"
+
+services:
+  ocpp:
+    image: jscorptech/gwat_ocpp:latest
+    env_file:
+      - .env
+    networks:
+      - gwat
+    ports:
+      - mode: ingress
+        target: 10800
+        published: ${PORT:?enviromentda PORT topilmadi} 
+        protocol: tcp
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: any
+      update_config:
+        parallelism: 1
+        order: start-first
+        failure_action: rollback
+        monitor: 30s
+        delay: 30s
+        max_failure_ratio: 0.2
+      resources:
+        limits:
+          cpus: '1.50'
+          memory: 1024M
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "5"
+
+networks:
+  gwat:
+    driver: overlay
+    attachable: true
+    external: true

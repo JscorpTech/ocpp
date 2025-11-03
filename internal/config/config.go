@@ -5,8 +5,9 @@ import (
 )
 
 type Config struct {
-	Addr    string
-	BaseUrl string
+	Addr      string
+	BaseUrl   string
+	RedisAddr string
 }
 
 func NewConfig() *Config {
@@ -18,8 +19,14 @@ func NewConfig() *Config {
 	if addr == "" {
 		addr = ":10800"
 	}
+
+	redisAddr := os.Getenv("REDIS_ADDR")
+	if redisAddr == "" {
+		redisAddr = "127.0.0.1:6379"
+	}
 	return &Config{
-		BaseUrl: baseUrl,
-		Addr:    addr,
+		BaseUrl:   baseUrl,
+		Addr:      addr,
+		RedisAddr: redisAddr,
 	}
 }
