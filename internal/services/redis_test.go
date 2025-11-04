@@ -23,7 +23,7 @@ func TestEventService_SendEvent(t *testing.T) {
 	rdb := redis.NewClient(&redis.Options{
 		Addr: "localhost:6379",
 	})
-	
+
 	logger, _ := zap.NewDevelopment()
 	service := NewEventService()
 
@@ -38,7 +38,7 @@ func TestEventService_SendEvent(t *testing.T) {
 	rdb.Del(ctx, "events")
 
 	// Test event sending
-	service.SendEvent(ctx, rdb, event, logger)
+	service.SendEvent(ctx, rdb, &event, logger)
 
 	// Verify event was pushed to Redis
 	result, err := rdb.RPop(ctx, "events").Result()
@@ -120,8 +120,8 @@ func TestEventService_SendEvent_AllEventTypes(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			service.SendEvent(ctx, rdb, tt.event, logger)
-			
+			service.SendEvent(ctx, rdb, &tt.event, logger)
+
 			// Redis test bo'lsa, event mavjudligini tekshiramiz
 			_, err := rdb.LLen(ctx, "events").Result()
 			if err != nil && err != redis.Nil {

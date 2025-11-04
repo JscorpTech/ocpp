@@ -8,6 +8,7 @@ const (
 	StopTransactionEvent       EventTypes = "stop_transaction"
 	MeterValuesEvent           EventTypes = "meter_value"
 	HealthEvent                EventTypes = "health"
+	DataTransferEvent          EventTypes = "data_transfer"
 )
 
 type Event struct {
@@ -43,4 +44,10 @@ type MeterValues struct {
 
 type Healthcheck struct {
 	Charger string `json:"charger"`
+}
+
+type DataTransfer struct {
+	VendorId  string `json:"vendorId"`
+	MessageId string `json:"messageId"`
+	Data      string `json:"data"`
 }

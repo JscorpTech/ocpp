@@ -10,16 +10,16 @@ import (
 )
 
 type EventService interface {
-	SendEvent(context.Context, *redis.Client, domain.Event, *zap.Logger)
+	SendEvent(context.Context, *redis.Client, *domain.Event, *zap.Logger)
 }
 
 type eventService struct{}
 
-func NewEventService() *eventService {
+func NewEventService() EventService {
 	return &eventService{}
 }
 
-func (e *eventService) SendEvent(ctx context.Context, rdb *redis.Client, event domain.Event, log *zap.Logger) {
+func (e *eventService) SendEvent(ctx context.Context, rdb *redis.Client, event *domain.Event, log *zap.Logger) {
 	payload, err := json.Marshal(event)
 	if err != nil {
 		log.Error("Event encode error", zap.Error(err))

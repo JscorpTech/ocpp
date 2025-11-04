@@ -26,30 +26,13 @@ func TestTransactionClient_GetTransactionFromTag_Success(t *testing.T) {
 	mockResponse := Transaction{
 		Status: true,
 		Data: struct {
-			Id            int     `json:"id"`
-			Conn          int     `json:"conn"`
-			Status        string  `json:"status"`
-			Limit         string  `json:"limit"`
-			Amount        string  `json:"amount"`
-			IsActive      bool    `json:"is_active"`
-			Tag           string  `json:"tag"`
-			MeterStart    int     `json:"meter_start"`
-			MeterStop     int     `json:"meter_stop"`
-			MeterConsumed int     `json:"meter_consumed"`
-			Soc           int     `json:"soc"`
-			StartDate     string  `json:"start_date"`
-			EndDate       *string `json:"end_date"`
+			Id     int    `json:"id"`
+			Status string `json:"status"`
+			Tag    string `json:"tag"`
 		}{
-			Id:         123,
-			Conn:       1,
-			Status:     "active",
-			Limit:      "100",
-			Amount:     "50.00",
-			IsActive:   true,
-			Tag:        "RFID-12345",
-			MeterStart: 0,
-			MeterStop:  5000,
-			StartDate:  "2025-10-31T10:00:00Z",
+			Id:     123,
+			Status: "active",
+			Tag:    "RFID-12345",
 		},
 	}
 

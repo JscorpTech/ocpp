@@ -12,19 +12,9 @@ import (
 type Transaction struct {
 	Status bool `json:"status"`
 	Data   struct {
-		Id            int     `json:"id"`
-		Conn          int     `json:"conn"`
-		Status        string  `json:"status"`
-		Limit         string  `json:"limit"`
-		Amount        string  `json:"amount"`
-		IsActive      bool    `json:"is_active"`
-		Tag           string  `json:"tag"`
-		MeterStart    int     `json:"meter_start"`
-		MeterStop     int     `json:"meter_stop"`
-		MeterConsumed int     `json:"meter_consumed"`
-		Soc           int     `json:"soc"`
-		StartDate     string  `json:"start_date"`
-		EndDate       *string `json:"end_date"`
+		Id     int    `json:"id"`
+		Status string `json:"status"`
+		Tag    string `json:"tag"`
 	} `json:"data"`
 }
 

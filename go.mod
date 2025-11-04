@@ -17,4 +17,5 @@ require (
 	go.uber.org/multierr v1.10.0 // indirect
 )
 
-replace github.com/voltbras/go-ocpp v1.1.0 => github.com/JscorpTech/go-ocpp v0.0.0-20251031141556-7e77d41f4376
+// replace github.com/voltbras/go-ocpp v1.1.0 => github.com/JscorpTech/go-ocpp v0.0.0-20251031141556-7e77d41f4376
+replace github.com/voltbras/go-ocpp v1.1.0 => /Volumes/disk/projects/go/go-ocpp

@@ -44,7 +44,7 @@ func (h *Handlers) MeterValues(req *cpreq.MeterValues) (cpresp.ChargePointRespon
 			MeterValue:    req.MeterValue,
 		},
 	}
-	h.event.SendEvent(h.ctx, h.redis, event, h.Logger)
+	h.event.SendEvent(h.ctx, h.redis, &event, h.Logger)
 	return &cpresp.MeterValues{}, nil
 }
 
@@ -62,7 +62,7 @@ func (h *Handlers) StartTransaction(req *cpreq.StartTransaction) (cpresp.ChargeP
 			MeterStart: req.MeterStart,
 		},
 	}
-	h.event.SendEvent(h.ctx, h.redis, event, h.Logger)
+	h.event.SendEvent(h.ctx, h.redis, &event, h.Logger)
 	return &cpresp.StartTransaction{
 		IdTagInfo: &cpresp.IdTagInfo{
 			Status: "Accepted",
@@ -81,7 +81,7 @@ func (h *Handlers) StopTransaction(req *cpreq.StopTransaction) (cpresp.ChargePoi
 			MeterStop:     req.MeterStop,
 		},
 	}
-	h.event.SendEvent(h.ctx, h.redis, event, h.Logger)
+	h.event.SendEvent(h.ctx, h.redis, &event, h.Logger)
 	return &cpresp.StopTransaction{
 		IdTagInfo: &cpresp.IdTagInfo{
 			Status: "Accepted",
@@ -96,7 +96,7 @@ func (h *Handlers) Heartbeart(req *cpreq.Heartbeat) (cpresp.ChargePointResponse,
 			Charger: h.metadata.ChargePointID,
 		},
 	}
-	h.event.SendEvent(h.ctx, h.redis, event, h.Logger)
+	h.event.SendEvent(h.ctx, h.redis, &event, h.Logger)
 	return &cpresp.Heartbeat{CurrentTime: time.Now()}, nil
 }
 
@@ -109,12 +109,11 @@ func (h *Handlers) StatusNotification(req *cpreq.StatusNotification) (cpresp.Cha
 			Status:  req.Status,
 		},
 	}
-	h.event.SendEvent(h.ctx, h.redis, event, h.Logger)
+	h.event.SendEvent(h.ctx, h.redis, &event, h.Logger)
 	return &cpresp.StatusNotification{}, nil
 }
 
 func (h *Handlers) Authorize(req *cpreq.Authorize) (cpresp.ChargePointResponse, error) {
-	h.Logger.Info("salom")
 	return &cpresp.Authorize{IdTagInfo: &cpresp.IdTagInfo{
 		Status: "Accepted",
 	}}, nil
@@ -129,7 +128,15 @@ func (h *Handlers) BootNotification(req *cpreq.BootNotification) (cpresp.ChargeP
 }
 
 func (h *Handlers) DataTransfer(req *cpreq.DataTransfer) (cpresp.ChargePointResponse, error) {
-	h.Logger.Info("DataTransfer", zap.Any("data", req.Data))
+	event := domain.Event{
+		Event: domain.DataTransferEvent,
+		Data: &domain.DataTransfer{
+			VendorId:  req.VendorId,
+			MessageId: req.MessageId,
+			Data:      req.Data,
+		},
+	}
+	h.event.SendEvent(h.ctx, h.redis, &event, h.Logger)
 	return &cpresp.DataTransfer{
 		Status: "Accepted",
 	}, nil
