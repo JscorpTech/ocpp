@@ -1,5 +1,5 @@
-github.com/JscorpTech/go-ocpp v0.0.0-20251031141556-7e77d41f4376 h1:aDfBENxG8rNtXa9G5qCtPOgqlz+PoCRfDAeN4W5uh58=
-github.com/JscorpTech/go-ocpp v0.0.0-20251031141556-7e77d41f4376/go.mod h1:3bNVOpqXGY+tHDdwKK4ZHJURI8eJrDZHqMb6LWQAP+A=
+github.com/JscorpTech/go-ocpp v0.0.0-20251105070553-6ad4759ef058 h1:1kXWs2ei4u+S/n/TuauTzNHIMZg+wHbQ9jfg8vQbywg=
+github.com/JscorpTech/go-ocpp v0.0.0-20251105070553-6ad4759ef058/go.mod h1:3bNVOpqXGY+tHDdwKK4ZHJURI8eJrDZHqMb6LWQAP+A=
 github.com/bsm/ginkgo/v2 v2.12.0 h1:Ny8MWAHyOepLGlLKYmXG4IEkioBysk6GpaRTLC8zwWs=
 github.com/bsm/ginkgo/v2 v2.12.0/go.mod h1:SwYbGRRDovPVboqFv0tPTcG1sN61LM1Z4ARdbAV9g4c=
 github.com/bsm/gomega v1.27.10 h1:yeMWxP2pV2fG3FgAODIY8EiRE3dy0aeFYt4l7wh6yKA=
