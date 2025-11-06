@@ -24,13 +24,13 @@ type Handlers struct {
 	transactionClient client.TransactionClient
 }
 
-func NewHandler(ctx context.Context, logger *zap.Logger, rdb *redis.Client, metadata cs.ChargePointRequestMetadata, cfg *config.Config) *Handlers {
+func NewHandler(ctx context.Context, logger *zap.Logger, rdb *redis.Client, metadata cs.ChargePointRequestMetadata, cfg *config.Config, event services.EventService) *Handlers {
 	return &Handlers{
 		Logger:            logger,
 		redis:             rdb,
 		ctx:               ctx,
 		metadata:          metadata,
-		event:             services.NewEventService(),
+		event:             event,
 		transactionClient: client.NewTransactionClient(cfg),
 	}
 }

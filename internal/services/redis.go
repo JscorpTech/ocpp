@@ -24,5 +24,7 @@ func (e *eventService) SendEvent(ctx context.Context, rdb *redis.Client, event *
 	if err != nil {
 		log.Error("Event encode error", zap.Error(err))
 	}
-	rdb.RPush(ctx, "events", payload)
+	if _, err = rdb.RPush(ctx, "events", payload).Result(); err != nil {
+		log.Error("redis error", zap.Error(err))
+	}
 }

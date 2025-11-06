@@ -12,6 +12,7 @@ import (
 
 	"github.com/JscorpTech/ocpp/internal/config"
 	"github.com/JscorpTech/ocpp/internal/domain"
+	"github.com/JscorpTech/ocpp/internal/services"
 	"github.com/redis/go-redis/v9"
 	"github.com/voltbras/go-ocpp"
 	"github.com/voltbras/go-ocpp/cs"
@@ -23,18 +24,20 @@ import (
 )
 
 type Server struct {
-	Cfg    *config.Config
-	Ctx    context.Context
-	Logger *zap.Logger
-	Redis  *redis.Client
+	cfg   *config.Config
+	ctx   context.Context
+	log   *zap.Logger
+	redis *redis.Client
+	event services.EventService
 }
 
 func NewServer(ctx context.Context, cfg *config.Config, logger *zap.Logger, rdb *redis.Client) *Server {
 	return &Server{
-		Cfg:    cfg,
-		Ctx:    ctx,
-		Logger: logger,
-		Redis:  rdb,
+		cfg:   cfg,
+		ctx:   ctx,
+		log:   logger,
+		redis: rdb,
+		event: services.NewEventService(),
 	}
 }
 
@@ -61,6 +64,26 @@ func (s *Server) Run() {
 	ocpp.SetErrorLogger(log.New(os.Stderr, "ERROR:", log.Ltime))
 	csys := cs.New()
 
+	csys.SetChargePointDisconnectionListener(func(CpID string) {
+		event := domain.Event{
+			Event: domain.DisconnectChargerEvent,
+			Data: domain.DisconnectCharger{
+				Charger: CpID,
+			},
+		}
+		s.event.SendEvent(s.ctx, s.redis, &event, s.log)
+	})
+
+	csys.SetChargePointConnectionListener(func(CpID string) {
+		event := domain.Event{
+			Event: domain.ConnectChargerEvent,
+			Data: domain.ConnectCharger{
+				Charger: CpID,
+			},
+		}
+		s.event.SendEvent(s.ctx, s.redis, &event, s.log)
+	})
+
 	http.HandleFunc("/command/", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			w.WriteHeader(http.StatusMethodNotAllowed)
@@ -74,7 +97,7 @@ func (s *Server) Run() {
 			return
 		}
 		if err := json.Unmarshal(dataByte, &req); err != nil {
-			s.Logger.Warn("Invalid request body", zap.Any("req", string(dataByte)))
+			s.log.Warn("Invalid request body", zap.Any("req", string(dataByte)))
 			writeJson(w, domain.ErrorResponse{Detail: "Invalid request body " + err.Error()}, http.StatusBadRequest)
 			return
 		}
@@ -86,7 +109,7 @@ func (s *Server) Run() {
 		station, err := csys.GetServiceOf(req.CpID, ocpp.V16, "")
 		if err != nil {
 			writeJson(w, domain.ErrorResponse{Detail: "Charger not connected"}, http.StatusBadRequest)
-			s.Logger.Error("Station error", zap.Error(err))
+			s.log.Error("Station error", zap.Error(err))
 			return
 		}
 		switch req.Command {
@@ -98,7 +121,7 @@ func (s *Server) Run() {
 			})
 			if err != nil {
 				writeJson(w, domain.ErrorResponse{Detail: "Internal server error"}, http.StatusBadRequest)
-				s.Logger.Error("remote start transaction error", zap.Error(err))
+				s.log.Error("remote start transaction error", zap.Error(err))
 			}
 			res := resp.(*csresp.RemoteStartTransaction)
 			writeJson(w, domain.RemoteStartTransactionRes{Status: res.Status}, http.StatusOK)
@@ -108,18 +131,18 @@ func (s *Server) Run() {
 			resp, err := station.Send(&csreq.RemoteStopTransaction{TransactionId: data.TransactionId})
 			if err != nil {
 				writeJson(w, domain.ErrorResponse{Detail: "Internal server error"}, http.StatusBadRequest)
-				s.Logger.Error("remote stop transaction error", zap.Error(err))
+				s.log.Error("remote stop transaction error", zap.Error(err))
 			}
 			res := resp.(*csresp.RemoteStopTransaction)
 			writeJson(w, domain.RemoteStopTransactionRes{Status: res.Status}, http.StatusOK)
 		default:
 			writeJson(w, domain.ErrorResponse{Detail: "Invalid command"}, http.StatusBadRequest)
-			s.Logger.Info("Invalid command")
+			s.log.Info("Invalid command")
 		}
 	})
 
-	go csys.Run(s.Cfg.Addr, func(req cpreq.ChargePointRequest, metadata cs.ChargePointRequestMetadata) (cpresp.ChargePointResponse, error) {
-		handler := NewHandler(s.Ctx, s.Logger, s.Redis, metadata, s.Cfg)
+	go csys.Run(s.cfg.Addr, func(req cpreq.ChargePointRequest, metadata cs.ChargePointRequestMetadata) (cpresp.ChargePointResponse, error) {
+		handler := NewHandler(s.ctx, s.log, s.redis, metadata, s.cfg, s.event)
 		switch req := req.(type) {
 		case *cpreq.BootNotification:
 			return handler.BootNotification(req)

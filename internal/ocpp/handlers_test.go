@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/JscorpTech/ocpp/internal/config"
+	"github.com/JscorpTech/ocpp/internal/services"
 	"github.com/redis/go-redis/v9"
 	"github.com/voltbras/go-ocpp/cs"
 	"github.com/voltbras/go-ocpp/messages/v1x/cpreq"
@@ -27,7 +28,8 @@ func setupTestHandler() *Handlers {
 		Addr:    ":8080",
 	}
 
-	return NewHandler(ctx, logger, rdb, metadata, cfg)
+	event := services.NewEventService()
+	return NewHandler(ctx, logger, rdb, metadata, cfg, event)
 }
 
 func TestNewHandler(t *testing.T) {
