@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"log"
 
 	"github.com/JscorpTech/ocpp/internal/config"
 	"github.com/JscorpTech/ocpp/internal/ocpp"
@@ -23,6 +24,10 @@ func main() {
 		panic(err)
 	}
 	server := ocpp.NewServer(ctx, cfg, logger, rdb)
-	go server.Run()
+	go func() {
+		if err := server.Run(); err != nil {
+			log.Panic(err)
+		}
+	}()
 	select {}
 }

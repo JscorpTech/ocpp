@@ -37,7 +37,8 @@ func NewHandler(ctx context.Context, logger *zap.Logger, rdb *redis.Client, meta
 
 func (h *Handlers) MeterValues(req *cpreq.MeterValues) (cpresp.ChargePointResponse, error) {
 	event := domain.Event{
-		Event: domain.MeterValuesEvent,
+		Domain: h.metadata.Host,
+		Event:  domain.MeterValuesEvent,
 		Data: domain.MeterValues{
 			Conn:          req.ConnectorId,
 			TransactionId: req.TransactionId,
@@ -54,7 +55,8 @@ func (h *Handlers) StartTransaction(req *cpreq.StartTransaction) (cpresp.ChargeP
 		panic(err)
 	}
 	event := domain.Event{
-		Event: domain.StartTransactionEvent,
+		Domain: h.metadata.Host,
+		Event:  domain.StartTransactionEvent,
 		Data: domain.StartTransaction{
 			Charger:    h.metadata.ChargePointID,
 			Conn:       req.ConnectorId,
@@ -73,7 +75,8 @@ func (h *Handlers) StartTransaction(req *cpreq.StartTransaction) (cpresp.ChargeP
 
 func (h *Handlers) StopTransaction(req *cpreq.StopTransaction) (cpresp.ChargePointResponse, error) {
 	event := domain.Event{
-		Event: domain.StopTransactionEvent,
+		Domain: h.metadata.Host,
+		Event:  domain.StopTransactionEvent,
 		Data: domain.StopTransaction{
 			Charger:       h.metadata.ChargePointID,
 			TransactionId: req.TransactionId,
@@ -91,7 +94,8 @@ func (h *Handlers) StopTransaction(req *cpreq.StopTransaction) (cpresp.ChargePoi
 
 func (h *Handlers) Heartbeart(req *cpreq.Heartbeat) (cpresp.ChargePointResponse, error) {
 	event := domain.Event{
-		Event: domain.HealthEvent,
+		Domain: h.metadata.Host,
+		Event:  domain.HealthEvent,
 		Data: domain.Healthcheck{
 			Charger: h.metadata.ChargePointID,
 		},
@@ -102,7 +106,8 @@ func (h *Handlers) Heartbeart(req *cpreq.Heartbeat) (cpresp.ChargePointResponse,
 
 func (h *Handlers) StatusNotification(req *cpreq.StatusNotification) (cpresp.ChargePointResponse, error) {
 	event := domain.Event{
-		Event: domain.ChangeConnectorStatusEvent,
+		Domain: h.metadata.Host,
+		Event:  domain.ChangeConnectorStatusEvent,
 		Data: domain.ChangeConnectorStatus{
 			Charger: h.metadata.ChargePointID,
 			Conn:    req.ConnectorId,
@@ -129,7 +134,8 @@ func (h *Handlers) BootNotification(req *cpreq.BootNotification) (cpresp.ChargeP
 
 func (h *Handlers) DataTransfer(req *cpreq.DataTransfer) (cpresp.ChargePointResponse, error) {
 	event := domain.Event{
-		Event: domain.DataTransferEvent,
+		Domain: h.metadata.Host,
+		Event:  domain.DataTransferEvent,
 		Data: &domain.DataTransfer{
 			VendorId:  req.VendorId,
 			MessageId: req.MessageId,

@@ -59,14 +59,15 @@ func (s *Server) Validate(w http.ResponseWriter, req domain.RemoteCommandReq) st
 	return ""
 }
 
-func (s *Server) Run() {
+func (s *Server) Run() error {
 	ocpp.SetDebugLogger(log.New(os.Stdout, "DEBUG:", log.Ltime))
 	ocpp.SetErrorLogger(log.New(os.Stderr, "ERROR:", log.Ltime))
 	csys := cs.New()
 
-	csys.SetChargePointDisconnectionListener(func(CpID string) {
+	csys.SetChargePointDisconnectionListener(func(CpID string, host string) {
 		event := domain.Event{
-			Event: domain.DisconnectChargerEvent,
+			Domain: host,
+			Event:  domain.DisconnectChargerEvent,
 			Data: domain.DisconnectCharger{
 				Charger: CpID,
 			},
@@ -74,9 +75,10 @@ func (s *Server) Run() {
 		s.event.SendEvent(s.ctx, s.redis, &event, s.log)
 	})
 
-	csys.SetChargePointConnectionListener(func(CpID string) {
+	csys.SetChargePointConnectionListener(func(CpID string, host string) {
 		event := domain.Event{
-			Event: domain.ConnectChargerEvent,
+			Domain: host,
+			Event:  domain.ConnectChargerEvent,
 			Data: domain.ConnectCharger{
 				Charger: CpID,
 			},
@@ -141,7 +143,7 @@ func (s *Server) Run() {
 		}
 	})
 
-	go csys.Run(s.cfg.Addr, func(req cpreq.ChargePointRequest, metadata cs.ChargePointRequestMetadata) (cpresp.ChargePointResponse, error) {
+	return csys.Run(s.cfg.Addr, func(req cpreq.ChargePointRequest, metadata cs.ChargePointRequestMetadata) (cpresp.ChargePointResponse, error) {
 		handler := NewHandler(s.ctx, s.log, s.redis, metadata, s.cfg, s.event)
 		switch req := req.(type) {
 		case *cpreq.BootNotification:
