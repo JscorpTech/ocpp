@@ -20,6 +20,7 @@ func NewEventService() EventService {
 }
 
 func (e *eventService) SendEvent(ctx context.Context, rdb *redis.Client, event *domain.Event, log *zap.Logger) {
+	event.Domain = "api.dwatt.uz"
 	payload, err := json.Marshal(event)
 	if err != nil {
 		log.Error("Event encode error", zap.Error(err))

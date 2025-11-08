@@ -14,8 +14,9 @@ const (
 )
 
 type Event struct {
-	Event EventTypes `json:"event"`
-	Data  any        `json:"data"`
+	Event  EventTypes `json:"event"`
+	Domain string     `json:"domain"`
+	Data   any        `json:"data"`
 }
 
 type ChangeConnectorStatus struct {
