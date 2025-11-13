@@ -50,8 +50,9 @@ type Healthcheck struct {
 }
 
 type DataTransfer struct {
-	VendorId  string `json:"vendorId"`
-	MessageId string `json:"messageId"`
+	Charger   string `json:"charger"`
+	VendorId  string `json:"vendor_id"`
+	MessageId string `json:"message_id"`
 	Data      string `json:"data"`
 }
 

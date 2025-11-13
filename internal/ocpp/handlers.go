@@ -137,6 +137,7 @@ func (h *Handlers) DataTransfer(req *cpreq.DataTransfer) (cpresp.ChargePointResp
 		Domain: h.metadata.Host,
 		Event:  domain.DataTransferEvent,
 		Data: &domain.DataTransfer{
+			Charger:   h.metadata.ChargePointID,
 			VendorId:  req.VendorId,
 			MessageId: req.MessageId,
 			Data:      req.Data,
