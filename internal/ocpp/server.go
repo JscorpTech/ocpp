@@ -137,6 +137,24 @@ func (s *Server) Run() error {
 			}
 			res := resp.(*csresp.RemoteStopTransaction)
 			writeJson(w, domain.RemoteStopTransactionRes{Status: res.Status}, http.StatusOK)
+		case domain.GetConfiguration:
+			var data domain.GetConfigurationReq
+			json.Unmarshal(req.Data, &data)
+			resp, err := station.Send(&csreq.GetConfiguration{Key: data.Key})
+			if err != nil {
+				writeJson(w, domain.ErrorResponse{Detail: "Error"}, http.StatusBadRequest)
+			}
+			res := resp.(*csresp.GetConfiguration)
+			writeJson(w, res, http.StatusOK)
+		case domain.ChangeConfiguration:
+			var data domain.ChangeConfigurationReq
+			json.Unmarshal(req.Data, &data)
+			resp, err := station.Send(&csreq.ChangeConfiguration{Key: data.Key, Value: data.Value})
+			if err != nil {
+				writeJson(w, domain.ErrorResponse{Detail: "Error"}, http.StatusBadRequest)
+			}
+			res := resp.(*csresp.ChangeConfiguration)
+			writeJson(w, res, http.StatusOK)
 		default:
 			writeJson(w, domain.ErrorResponse{Detail: "Invalid command"}, http.StatusBadRequest)
 			s.log.Info("Invalid command")

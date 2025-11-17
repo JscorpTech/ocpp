@@ -9,6 +9,8 @@ type RemoteCommand string
 var (
 	RemoteStartTransaction RemoteCommand = "remote_start_transaction"
 	RemoteStopTransaction  RemoteCommand = "remote_stop_transaction"
+	GetConfiguration       RemoteCommand = "get_configuration"
+	ChangeConfiguration    RemoteCommand = "change_configuration"
 )
 
 type RemoteCommandRes struct {
@@ -39,4 +41,13 @@ type RemoteStopTransactionRes struct {
 
 type ErrorResponse struct {
 	Detail string `json:"detail"`
+}
+
+type GetConfigurationReq struct {
+	Key []string `json:"key"`
+}
+
+type ChangeConfigurationReq struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
 }
