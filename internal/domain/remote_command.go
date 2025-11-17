@@ -26,7 +26,7 @@ type RemoteCommandReq struct {
 
 type RemoteStartTransactionReq struct {
 	Tag         string `json:"tag"`
-	ConnectorID string `json:"connector_id"`
+	ConnectorID int32  `json:"connector_id"`
 }
 
 type RemoteStartTransactionRes struct {

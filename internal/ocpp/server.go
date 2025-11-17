@@ -119,7 +119,8 @@ func (s *Server) Run() error {
 			var data domain.RemoteStartTransactionReq
 			json.Unmarshal(req.Data, &data)
 			resp, err := station.Send(&csreq.RemoteStartTransaction{
-				IdTag: data.Tag,
+				IdTag:       data.Tag,
+				ConnectorId: data.ConnectorID,
 			})
 			if err != nil {
 				writeJson(w, domain.ErrorResponse{Detail: "Internal server error"}, http.StatusBadRequest)
