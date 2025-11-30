@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 
 	"github.com/JscorpTech/ocpp/internal/config"
 )
@@ -35,7 +36,11 @@ func NewTransactionClient(cfg *config.Config) TransactionClient {
 }
 
 func (t *transactionClient) GetTransactionFromTag(tag string) (*Transaction, error) {
-	req, err := http.NewRequest("GET", fmt.Sprintf("%s/api/transaction/tag/%s/", t.Config.BaseUrl, tag), nil)
+	hostname, err := os.Hostname()
+	if err != nil {
+		return nil, err
+	}
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/api/transaction/tag/%s/", hostname, tag), nil)
 	if err != nil {
 		return nil, err
 	}
