@@ -163,7 +163,7 @@ func (s *Server) Run() error {
 	})
 
 	return csys.Run(s.cfg.Addr, func(req cpreq.ChargePointRequest, metadata cs.ChargePointRequestMetadata) (cpresp.ChargePointResponse, error) {
-		handler := NewHandler(s.ctx, s.log, s.redis, metadata, s.cfg, s.event)
+		handler := NewHandler(s.ctx, s.log, s.redis, metadata, s.cfg, s.event, metadata.Host)
 		switch req := req.(type) {
 		case *cpreq.BootNotification:
 			return handler.BootNotification(req)

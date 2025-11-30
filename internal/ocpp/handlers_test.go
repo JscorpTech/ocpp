@@ -29,7 +29,7 @@ func setupTestHandler() *Handlers {
 	}
 
 	event := services.NewEventService()
-	return NewHandler(ctx, logger, rdb, metadata, cfg, event)
+	return NewHandler(ctx, logger, rdb, metadata, cfg, event, "localhost")
 }
 
 func TestNewHandler(t *testing.T) {

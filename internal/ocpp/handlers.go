@@ -22,9 +22,10 @@ type Handlers struct {
 	metadata          cs.ChargePointRequestMetadata
 	event             services.EventService
 	transactionClient client.TransactionClient
+	host              string
 }
 
-func NewHandler(ctx context.Context, logger *zap.Logger, rdb *redis.Client, metadata cs.ChargePointRequestMetadata, cfg *config.Config, event services.EventService) *Handlers {
+func NewHandler(ctx context.Context, logger *zap.Logger, rdb *redis.Client, metadata cs.ChargePointRequestMetadata, cfg *config.Config, event services.EventService, host string) *Handlers {
 	return &Handlers{
 		Logger:            logger,
 		redis:             rdb,
@@ -32,6 +33,7 @@ func NewHandler(ctx context.Context, logger *zap.Logger, rdb *redis.Client, meta
 		metadata:          metadata,
 		event:             event,
 		transactionClient: client.NewTransactionClient(cfg),
+		host:              host,
 	}
 }
 
@@ -50,7 +52,7 @@ func (h *Handlers) MeterValues(req *cpreq.MeterValues) (cpresp.ChargePointRespon
 }
 
 func (h *Handlers) StartTransaction(req *cpreq.StartTransaction) (cpresp.ChargePointResponse, error) {
-	transaction, err := h.transactionClient.GetTransactionFromTag(req.IdTag)
+	transaction, err := h.transactionClient.GetTransactionFromTag(req.IdTag, h.host)
 	if err != nil {
 		panic(err)
 	}

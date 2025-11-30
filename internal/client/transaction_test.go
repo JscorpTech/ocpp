@@ -55,7 +55,7 @@ func TestTransactionClient_GetTransactionFromTag_Success(t *testing.T) {
 	}
 
 	client := NewTransactionClient(cfg)
-	transaction, err := client.GetTransactionFromTag("RFID-12345")
+	transaction, err := client.GetTransactionFromTag("RFID-12345", "localhost")
 
 	if err != nil {
 		t.Fatalf("GetTransactionFromTag() error = %v", err)
@@ -87,7 +87,7 @@ func TestTransactionClient_GetTransactionFromTag_InvalidJSON(t *testing.T) {
 	}
 
 	client := NewTransactionClient(cfg)
-	_, err := client.GetTransactionFromTag("test-tag")
+	_, err := client.GetTransactionFromTag("test-tag", "localhost")
 
 	if err == nil {
 		t.Error("Expected error for invalid JSON, got nil")
@@ -106,7 +106,7 @@ func TestTransactionClient_GetTransactionFromTag_ServerError(t *testing.T) {
 	}
 
 	client := NewTransactionClient(cfg)
-	transaction, err := client.GetTransactionFromTag("test-tag")
+	transaction, err := client.GetTransactionFromTag("test-tag", "localhost")
 
 	// Server xatosi bo'lsa ham, response qaytarish mumkin
 	if err != nil {
