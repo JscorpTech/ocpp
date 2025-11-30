@@ -132,7 +132,7 @@ jobs:
 
             update_env \
               "REDIS_ADDR=redis:6379" \
-              "BASE_URL=https://api.dwatt.uz"
+              "BASE_URL=host"
 
             export PORT=10800
             docker stack deploy -c stack.yaml ${{ env.PROJECT_NAME }}
