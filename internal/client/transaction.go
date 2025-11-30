@@ -36,9 +36,11 @@ func NewTransactionClient(cfg *config.Config) TransactionClient {
 }
 
 func (t *transactionClient) GetTransactionFromTag(tag string) (*Transaction, error) {
-	hostname, err := os.Hostname()
-	if err != nil {
-		return nil, err
+	var hostname string
+	if t.Config.BaseUrl == "host" {
+		hostname, _ = os.Hostname()
+	} else {
+		hostname = t.Config.BaseUrl
 	}
 	req, err := http.NewRequest("GET", fmt.Sprintf("%s/api/transaction/tag/%s/", hostname, tag), nil)
 	if err != nil {
