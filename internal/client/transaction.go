@@ -1,10 +1,12 @@
 package client
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/JscorpTech/ocpp/internal/config"
 )
@@ -29,7 +31,14 @@ type transactionClient struct {
 
 func NewTransactionClient(cfg *config.Config) TransactionClient {
 	return &transactionClient{
-		Client: &http.Client{},
+		Client: &http.Client{
+			Timeout: 10 * time.Second,
+			Transport: &http.Transport{
+				MaxIdleConns:        100,
+				MaxIdleConnsPerHost: 10,
+				IdleConnTimeout:     90 * time.Second,
+			},
+		},
 		Config: cfg,
 	}
 }
@@ -40,20 +49,37 @@ func (t *transactionClient) GetTransactionFromTag(tag string, host string) (*Tra
 	} else {
 		host = t.Config.BaseUrl
 	}
-	req, err := http.NewRequest("GET", fmt.Sprintf("%s/api/transaction/tag/%s/", host, tag), nil)
+	
+	// Create request with timeout context
+	ctx, cancel := context.WithTimeout(context.Background(), 8*time.Second)
+	defer cancel()
+	
+	req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("%s/api/transaction/tag/%s/", host, tag), nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
+	
 	res, err := t.Client.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to execute request: %w", err)
 	}
 	defer res.Body.Close()
-	body, _ := io.ReadAll(res.Body)
+	
+	// Check for non-200 status codes
+	if res.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(res.Body)
+		return nil, fmt.Errorf("backend API returned status %d: %s", res.StatusCode, string(body))
+	}
+	
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+	
 	var transaction Transaction
 	if err := json.Unmarshal(body, &transaction); err != nil {
-		fmt.Println(string(body))
-		return nil, err
+		return nil, fmt.Errorf("failed to unmarshal response: %w (body: %s)", err, string(body))
 	}
+	
 	return &transaction, nil
 }
