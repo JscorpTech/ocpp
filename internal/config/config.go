@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"os"
 )
 
@@ -10,10 +11,10 @@ type Config struct {
 	RedisAddr string
 }
 
-func NewConfig() *Config {
+func NewConfig() (*Config, error) {
 	baseUrl := os.Getenv("BASE_URL")
 	if baseUrl == "" {
-		panic("Base url is required")
+		return nil, errors.New("BASE_URL environment variable is required")
 	}
 	addr := os.Getenv("ADDR")
 	if addr == "" {
@@ -28,5 +29,5 @@ func NewConfig() *Config {
 		BaseUrl:   baseUrl,
 		Addr:      addr,
 		RedisAddr: redisAddr,
-	}
+	}, nil
 }

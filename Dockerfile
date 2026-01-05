@@ -2,6 +2,9 @@ FROM golang:1.25-alpine AS builder
 
 WORKDIR /app
 
+# Install ca-certificates for SSL/TLS
+RUN apk --no-cache add ca-certificates
+
 COPY go.mod go.sum ./
 RUN go mod download
 
@@ -12,9 +15,10 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags="-s -w" -o 
 # Stage 2: Create the final, minimal image
 FROM alpine:latest
 
-WORKDIR /app
+# Install ca-certificates for SSL/TLS connections
+RUN apk --no-cache add ca-certificates
 
-COPY .env .env
+WORKDIR /app
 
 COPY --from=builder /app/main .
 

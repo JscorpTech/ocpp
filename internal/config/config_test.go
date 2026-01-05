@@ -10,28 +10,28 @@ func TestNewConfig(t *testing.T) {
 		name      string
 		baseURL   string
 		addr      string
-		wantPanic bool
+		wantError bool
 		wantAddr  string
 	}{
 		{
 			name:      "valid config with custom addr",
 			baseURL:   "http://localhost:8000",
 			addr:      ":8080",
-			wantPanic: false,
+			wantError: false,
 			wantAddr:  ":8080",
 		},
 		{
 			name:      "valid config with default addr",
 			baseURL:   "http://localhost:8000",
 			addr:      "",
-			wantPanic: false,
+			wantError: false,
 			wantAddr:  ":10800",
 		},
 		{
 			name:      "missing base url",
 			baseURL:   "",
 			addr:      ":8080",
-			wantPanic: true,
+			wantError: true,
 		},
 	}
 
@@ -45,23 +45,25 @@ func TestNewConfig(t *testing.T) {
 				os.Unsetenv("ADDR")
 			}()
 
-			if tt.wantPanic {
-				defer func() {
-					if r := recover(); r == nil {
-						t.Errorf("NewConfig() should panic but didn't")
-					}
-				}()
+			cfg, err := NewConfig()
+
+			if tt.wantError {
+				if err == nil {
+					t.Errorf("NewConfig() should return error but didn't")
+				}
+				return
 			}
 
-			cfg := NewConfig()
+			if err != nil {
+				t.Errorf("NewConfig() returned unexpected error: %v", err)
+				return
+			}
 
-			if !tt.wantPanic {
-				if cfg.BaseUrl != tt.baseURL {
-					t.Errorf("BaseUrl = %v, want %v", cfg.BaseUrl, tt.baseURL)
-				}
-				if cfg.Addr != tt.wantAddr {
-					t.Errorf("Addr = %v, want %v", cfg.Addr, tt.wantAddr)
-				}
+			if cfg.BaseUrl != tt.baseURL {
+				t.Errorf("BaseUrl = %v, want %v", cfg.BaseUrl, tt.baseURL)
+			}
+			if cfg.Addr != tt.wantAddr {
+				t.Errorf("Addr = %v, want %v", cfg.Addr, tt.wantAddr)
 			}
 		})
 	}
