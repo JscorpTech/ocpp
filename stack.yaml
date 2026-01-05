@@ -26,8 +26,8 @@ services:
         max_failure_ratio: 0.2
       resources:
         limits:
-          cpus: '1.50'
-          memory: 1024M
+          cpus: '5'
+          memory: 2048M
     logging:
       driver: json-file
       options:
