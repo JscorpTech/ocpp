@@ -54,7 +54,17 @@ func (h *Handlers) MeterValues(req *cpreq.MeterValues) (cpresp.ChargePointRespon
 func (h *Handlers) StartTransaction(req *cpreq.StartTransaction) (cpresp.ChargePointResponse, error) {
 	transaction, err := h.transactionClient.GetTransactionFromTag(req.IdTag, h.host)
 	if err != nil {
-		panic(err)
+		h.Logger.Error("Failed to get transaction from backend API",
+			zap.Error(err),
+			zap.String("idTag", req.IdTag),
+			zap.String("chargePointID", h.metadata.ChargePointID))
+		// Return rejected status instead of panicking
+		return &cpresp.StartTransaction{
+			IdTagInfo: &cpresp.IdTagInfo{
+				Status: "Invalid",
+			},
+			TransactionId: 0,
+		}, nil
 	}
 	event := domain.Event{
 		Domain: h.metadata.Host,
