@@ -67,7 +67,10 @@ func (t *transactionClient) GetTransactionFromTag(tag string, host string) (*Tra
 	
 	// Check for non-200 status codes
 	if res.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(res.Body)
+		body, err := io.ReadAll(io.LimitReader(res.Body, 1024)) // Limit error body to 1KB
+		if err != nil {
+			return nil, fmt.Errorf("backend API returned status %d (failed to read error body: %w)", res.StatusCode, err)
+		}
 		return nil, fmt.Errorf("backend API returned status %d: %s", res.StatusCode, string(body))
 	}
 	
