@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"math"
 	"os"
 	"os/signal"
 	"syscall"
@@ -44,7 +45,6 @@ func main() {
 	cfg, err := config.NewConfig()
 	if err != nil {
 		logger.Fatal("Failed to load configuration", zap.Error(err))
-		os.Exit(1)
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -58,7 +58,7 @@ func main() {
 	})
 	defer rdb.Close()
 
-	// Test Redis connection with retry logic
+	// Test Redis connection with exponential backoff retry logic
 	maxRetries := 5
 	for i := 0; i < maxRetries; i++ {
 		if err := rdb.Ping(ctx).Err(); err != nil {
@@ -68,9 +68,10 @@ func main() {
 				zap.Int("max_retries", maxRetries))
 			if i == maxRetries-1 {
 				logger.Fatal("Failed to connect to Redis after max retries", zap.Error(err))
-				os.Exit(1)
 			}
-			time.Sleep(time.Second * 2)
+			// Exponential backoff: 1s, 2s, 4s, 8s, 16s
+			backoffDuration := time.Duration(math.Pow(2, float64(i))) * time.Second
+			time.Sleep(backoffDuration)
 			continue
 		}
 		logger.Info("Successfully connected to Redis")
