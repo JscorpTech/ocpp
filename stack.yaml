@@ -15,19 +15,25 @@ services:
     deploy:
       mode: replicated
       replicas: 1
-      # restart_policy:
-      #   condition: any
-      # update_config:
-      #   parallelism: 1
-      #   order: start-first
-      #   failure_action: rollback
-      #   monitor: 30s
-      #   delay: 30s
-      #   max_failure_ratio: 0.2
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      update_config:
+        parallelism: 1
+        order: start-first
+        failure_action: rollback
+        monitor: 30s
+        delay: 30s
+        max_failure_ratio: 0.2
       resources:
         limits:
           cpus: '4'
           memory: 2048M
+        reservations:
+          cpus: '0.5'
+          memory: 512M
     logging:
       driver: json-file
       options:
